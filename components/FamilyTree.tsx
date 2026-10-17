@@ -5,7 +5,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   ReactFlowProvider,
-    getRectOfNodes,
+  getRectOfNodes,
   useReactFlow,
   type Node,
 } from "reactflow";
@@ -45,6 +45,7 @@ function TreeInner({
   onSelect,
 }: Props) {
   const rf = useReactFlow();
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const layout = useMemo(() => buildTreeLayout(members), [members]);
 
@@ -66,7 +67,6 @@ function TreeInner({
     [layout.nodes, members, rootId, highlightIds, selectedId]
   );
 
-  // সদস্য সংখ্যা বদলালে পুরো tree পর্দায় ধরিয়ে দেওয়া
   const count = members.length;
   useEffect(() => {
     const t = setTimeout(
@@ -76,7 +76,6 @@ function TreeInner({
     return () => clearTimeout(t);
   }, [count, rf]);
 
-  // "View in Tree": নির্দিষ্ট সদস্যের উপর focus
   useEffect(() => {
     if (!focusRequest) return;
     const target = layout.nodes.find((n) => n.id === focusRequest.id);
@@ -108,8 +107,6 @@ function TreeInner({
     }
   }, [rf, rootId, layout.nodes, fit]);
 
-    const [pdfBusy, setPdfBusy] = useState(false);
-
   const downloadPdf = useCallback(async () => {
     const el = document.querySelector<HTMLElement>(".react-flow__viewport");
     const all = rf.getNodes();
@@ -122,35 +119,54 @@ function TreeInner({
       const h = Math.ceil(b.height + pad * 2);
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
-      const ratio = w * h > 3000000 ? 1 : 2;
-      const png = await toPng(el, {
+
+      const opts = {
         backgroundColor: dark ? "#020617" : "#f8fafc",
         width: w,
         height: h,
-        pixelRatio: ratio,
+        pixelRatio: 1.5,
+        skipFonts: true,
         style: {
           width: `${w}px`,
           height: `${h}px`,
           transform: `translate(${pad - b.x}px, ${pad - b.y}px) scale(1)`,
         },
-      });
+      };
+
+      // প্রথমবার অনেক সময় ফাঁকা আসে, তাই একবার গরম করে নেওয়া
+      await toPng(el, opts).catch(() => undefined);
+      const png = await toPng(el, opts);
+
       const pdf = new jsPDF({
         orientation: w >= h ? "landscape" : "portrait",
         unit: "px",
         format: [w, h],
       });
       pdf.addImage(png, "PNG", 0, 0, w, h);
-      pdf.save("family-tree.pdf");
-    } catch {
-      alert("PDF বানানো যায়নি। আবার চেষ্টা করুন।");
+
+      const blob = pdf.output("blob");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "family-tree.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (e) {
+      alert(
+        "PDF বানানো যায়নি: " +
+          (e instanceof Error ? e.message : "অজানা সমস্যা")
+      );
     } finally {
       setPdfBusy(false);
     }
   }, [rf, dark]);
+
   if (members.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-6 text-center text-slate-500 dark:text-slate-400">
-        এখনো কোনো সদস্য নেই। উপরের “Add Member” বাটনে চাপুন।
+        এখনো কোনো সদস্য নেই। উপরের “Add” বাটনে চাপুন।
       </div>
     );
   }
@@ -220,7 +236,7 @@ function TreeInner({
           aria-label="Reset view"
           title="Reset view"
         >
-                    <RotateCcw size={20} />
+          <RotateCcw size={20} />
         </button>
         <button
           type="button"
