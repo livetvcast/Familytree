@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --a: 0.2;
+}
+.dark {
+  --a: 0.32;
+}
+
 html,
 body {
   height: 100%;
@@ -12,6 +19,109 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali",
     "Noto Sans", Arial, sans-serif;
   overscroll-behavior: none;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* পেছনের ভাসমান রঙিন আভা */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 35% at 20% 25%, rgb(59 130 246 / var(--a)), transparent 70%),
+    radial-gradient(35% 35% at 80% 20%, rgb(236 72 153 / var(--a)), transparent 70%),
+    radial-gradient(40% 40% at 70% 80%, rgb(139 92 246 / var(--a)), transparent 70%),
+    radial-gradient(30% 30% at 25% 80%, rgb(20 184 166 / var(--a)), transparent 70%);
+  animation: aurora 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes aurora {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.08) rotate(3deg);
+  }
+  100% {
+    transform: translate3d(-2%, 4%, 0) scale(1.02);
+  }
+}
+
+/* বয়ে যাওয়া রঙের লেখা */
+.gradient-text {
+  background-image: linear-gradient(90deg, #2563eb, #8b5cf6, #ec4899, #2563eb);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 8s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+/* রঙিন বাটন */
+.btn-gradient {
+  background-image: linear-gradient(120deg, #2563eb, #7c3aed, #db2777, #2563eb);
+  background-size: 200% 100%;
+  box-shadow: 0 6px 18px rgb(99 102 241 / 0.35);
+  animation: shine 10s linear infinite;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.btn-gradient:hover {
+  box-shadow: 0 8px 24px rgb(168 85 247 / 0.5);
+}
+
+/* সদস্যের card */
+.card-pop {
+  animation: pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-pop:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgb(99 102 241 / 0.25);
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+}
+
+/* বিয়ের লাইনে চলন্ত দাগ */
+.react-flow__edge-path[style*="stroke-dasharray"] {
+  animation: dashflow 1.4s linear infinite;
+}
+@keyframes dashflow {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* Profile/Form বক্স ও বার্তা */
+[role="dialog"] {
+  animation: sheet 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes sheet {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+}
+[role="status"] {
+  animation: toast 0.3s ease-out backwards;
+}
+@keyframes toast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
 }
 
 .react-flow__attribution {
@@ -28,4 +138,13 @@ textarea:focus-visible,
 [role="button"]:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
