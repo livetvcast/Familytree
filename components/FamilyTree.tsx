@@ -1,15 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   ReactFlowProvider,
+    getRectOfNodes,
   useReactFlow,
   type Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  FileDown,
+  Loader2,
+  Maximize,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import type { FamilyMember } from "@/lib/types";
 import { buildTreeLayout, NODE_H, NODE_W } from "@/lib/layout";
 import { relationLabel } from "@/lib/utils";
@@ -100,6 +108,45 @@ function TreeInner({
     }
   }, [rf, rootId, layout.nodes, fit]);
 
+    const [pdfBusy, setPdfBusy] = useState(false);
+
+  const downloadPdf = useCallback(async () => {
+    const el = document.querySelector<HTMLElement>(".react-flow__viewport");
+    const all = rf.getNodes();
+    if (!el || all.length === 0) return;
+    setPdfBusy(true);
+    try {
+      const b = getRectOfNodes(all);
+      const pad = 60;
+      const w = Math.ceil(b.width + pad * 2);
+      const h = Math.ceil(b.height + pad * 2);
+      const { toPng } = await import("html-to-image");
+      const { jsPDF } = await import("jspdf");
+      const ratio = w * h > 3000000 ? 1 : 2;
+      const png = await toPng(el, {
+        backgroundColor: dark ? "#020617" : "#f8fafc",
+        width: w,
+        height: h,
+        pixelRatio: ratio,
+        style: {
+          width: `${w}px`,
+          height: `${h}px`,
+          transform: `translate(${pad - b.x}px, ${pad - b.y}px) scale(1)`,
+        },
+      });
+      const pdf = new jsPDF({
+        orientation: w >= h ? "landscape" : "portrait",
+        unit: "px",
+        format: [w, h],
+      });
+      pdf.addImage(png, "PNG", 0, 0, w, h);
+      pdf.save("family-tree.pdf");
+    } catch {
+      alert("PDF বানানো যায়নি। আবার চেষ্টা করুন।");
+    } finally {
+      setPdfBusy(false);
+    }
+  }, [rf, dark]);
   if (members.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-6 text-center text-slate-500 dark:text-slate-400">
@@ -173,7 +220,21 @@ function TreeInner({
           aria-label="Reset view"
           title="Reset view"
         >
-          <RotateCcw size={20} />
+                    <RotateCcw size={20} />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          onClick={downloadPdf}
+          disabled={pdfBusy}
+          aria-label="Download PDF"
+          title="Download PDF"
+        >
+          {pdfBusy ? (
+            <Loader2 size={20} className="animate-spin" />
+          ) : (
+            <FileDown size={20} />
+          )}
         </button>
       </div>
     </div>
