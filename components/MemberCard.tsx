@@ -29,10 +29,10 @@ function MemberNodeBase({ data, selected }: NodeProps<MemberNodeData>) {
       role="button"
       tabIndex={0}
       aria-label={`${member.name}${label ? ", " + label : ""}`}
-      className={`flex h-24 w-[180px] cursor-pointer items-center gap-3 rounded-2xl border bg-white px-3 shadow-soft transition-shadow dark:border-slate-700 dark:bg-slate-800 ${
+      className={`card-pop flex h-24 w-[180px] cursor-pointer items-center gap-3 rounded-2xl border bg-white px-3 shadow-soft dark:border-slate-700 dark:bg-slate-800 ${
         selected || highlight
           ? "border-brand-500 shadow-lg ring-2 ring-brand-500/40"
-          : "border-slate-200 hover:shadow-lg"
+          : "border-slate-200"
       }`}
     >
       <Handle id="top" type="target" position={Position.Top} style={hidden} isConnectable={false} />
