@@ -31,9 +31,9 @@ export default function Toolbar({
   return (
     <header className="z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3 sm:px-5">
-        <h1 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h1 className="flex items-center gap-2 text-lg font-semibold">
           <TreeDeciduous size={22} className="text-brand-600" />
-          My Family Tree
+          <span className="gradient-text">My Family Tree</span>
         </h1>
 
         <div className="order-3 w-full md:order-2 md:mx-auto md:w-auto md:max-w-sm md:flex-1">
@@ -49,7 +49,7 @@ export default function Toolbar({
             type="button"
             onClick={onAdd}
             aria-label="Add Family Member"
-            className="flex h-11 items-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-medium text-white shadow-soft hover:bg-brand-700 active:scale-95"
+            className="btn-gradient flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-medium text-white active:scale-95"
           >
             <Plus size={18} />
             <span className="hidden sm:inline">Add Member</span>
